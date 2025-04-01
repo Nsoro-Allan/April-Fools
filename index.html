@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>April Fool's Day Surprise</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --balloon-width: clamp(100px, 20vw, 150px);
+            --balloon-height: clamp(120px, 25vw, 180px);
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+            touch-action: manipulation;
+        }
+
+        .container {
+            text-align: center;
+            z-index: 10;
+            padding: 0 20px;
+            max-width: 100%;
+        }
+
+        h1 {
+            color: #2d3748;
+            margin-bottom: clamp(20px, 5vh, 40px);
+            font-size: clamp(1.5rem, 5vw, 2.5rem);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 1s ease forwards;
+            text-align: center;
+            width: 100%;
+        }
+
+        .balloon {
+            width: var(--balloon-width);
+            height: var(--balloon-height);
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.3s ease-in-out;
+            animation: float 3s ease-in-out infinite;
+            transform-origin: bottom center;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .balloon:hover {
+            transform: scale(1.05);
+        }
+
+        .balloon:active {
+            transform: scale(0.95);
+            transition: transform 0.1s ease-in-out;
+        }
+
+        .balloon-body {
+            background: #ff6b6b;
+            border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            box-shadow: inset -15px -10px 15px rgba(0,0,0,0.1);
+        }
+
+        .balloon-highlight {
+            position: absolute;
+            width: 30%;
+            height: 25%;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            top: 15%;
+            left: 15%;
+            transform: rotate(25deg);
+        }
+
+        .balloon-string {
+            position: absolute;
+            width: 2px;
+            height: clamp(40px, 10vh, 80px);
+            background: #2d3748;
+            bottom: -80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: -1;
+        }
+
+        .explosion {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+            opacity: 0;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: var(--color);
+            opacity: 0;
+        }
+
+        .message-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.7);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            padding: 20px;
+        }
+
+        .message-box {
+            background: white;
+            padding: clamp(20px, 5vw, 40px);
+            border-radius: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            text-align: center;
+            transform: scale(0.7);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: min(90%, 450px);
+        }
+
+        .message-box h2 {
+            margin-bottom: clamp(15px, 4vw, 20px);
+            color: #ff6b6b;
+            font-size: clamp(1.8rem, 6vw, 2.5rem);
+        }
+
+        .message-box p {
+            margin-bottom: clamp(15px, 4vw, 30px);
+            color: #4a5568;
+            font-size: clamp(1rem, 3vw, 1.2rem);
+            line-height: 1.5;
+        }
+
+        .message-box button {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: clamp(10px 20px, 3vw, 12px 30px);
+            border-radius: 30px;
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s ease;
+            font-weight: bold;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            min-width: 120px;
+            min-height: 44px; /* Minimum tap target size for mobile */
+        }
+
+        .message-box button:hover {
+            background: #fa5252;
+            transform: translateY(-2px);
+        }
+
+        .message-box button:active {
+            transform: translateY(0);
+        }
+
+        .show-message {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .show-message .message-box {
+            transform: scale(1);
+        }
+
+        .particles {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        .instructions {
+            position: absolute;
+            bottom: clamp(10px, 5vh, 20px);
+            font-size: clamp(0.8rem, 2.5vw, 1rem);
+            color: #4a5568;
+            opacity: 0.7;
+            animation: pulse 2s infinite;
+            text-align: center;
+            padding: 0 10px;
+        }
+
+        /* Orientation handler */
+        @media screen and (orientation: landscape) and (max-height: 500px) {
+            body {
+                flex-direction: row;
+                justify-content: space-around;
+            }
+            
+            .container {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: center;
+                gap: 5vw;
+            }
+            
+            h1 {
+                margin-bottom: 0;
+                text-align: right;
+                flex: 1;
+            }
+            
+            .balloon {
+                flex: 0 0 auto;
+            }
+            
+            .instructions {
+                bottom: 10px;
+                width: 100%;
+            }
+        }
+
+        /* For very small screens */
+        @media screen and (max-width: 320px) {
+            h1 {
+                font-size: 1.3rem;
+            }
+            
+            .message-box {
+                padding: 15px;
+            }
+            
+            .message-box h2 {
+                font-size: 1.5rem;
+            }
+            
+            .message-box p {
+                font-size: 0.9rem;
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 0.7;
+            }
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        /* Handle iOS Safari overscroll behavior */
+        html {
+            position: fixed;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        body {
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Click the balloon for a surprise!</h1>
+        <div class="balloon" id="balloon">
+            <div class="balloon-body">
+                <div class="balloon-highlight"></div>
+            </div>
+            <div class="balloon-string"></div>
+        </div>
+    </div>
+
+    <div class="instructions">Tap or click the balloon</div>
+
+    <div class="explosion" id="explosion"></div>
+
+    <div class="message-container" id="message-container">
+        <div class="message-box">
+            <h2>April Fool!</h2>
+            <p>Congratulations! You've been officially fooled on April 1st, 2025.</p>
+            <p>Share this with your friends and family to spread the fun!</p>
+            <button id="close-btn">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const balloon = document.getElementById('balloon');
+            const explosion = document.getElementById('explosion');
+            const messageContainer = document.getElementById('message-container');
+            const closeBtn = document.getElementById('close-btn');
+            
+            // Detect touch devices and add appropriate classes
+            if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+                document.body.classList.add('touch-device');
+            }
+            
+            // Randomly change balloon color
+            function randomColor() {
+                const colors = ['#ff6b6b', '#74b9ff', '#55efc4', '#ffeaa7', '#a29bfe', '#fd79a8'];
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+            
+            const balloonBody = document.querySelector('.balloon-body');
+            balloonBody.style.background = randomColor();
+
+            // Balloon click/touch event
+            function handleBalloonClick(e) {
+                // Prevent double-clicks or multiple touches
+                balloon.removeEventListener('click', handleBalloonClick);
+                balloon.removeEventListener('touchend', handleBalloonTouchEnd);
+                
+                // Hide balloon
+                balloon.style.display = 'none';
+                
+                // Create explosion particles
+                createExplosion(e);
+                
+                // Show message after a slight delay
+                setTimeout(function() {
+                    messageContainer.classList.add('show-message');
+                }, 800);
+            }
+            
+            function handleBalloonTouchEnd(e) {
+                e.preventDefault(); // Prevent ghost clicks
+                handleBalloonClick(e);
+            }
+            
+            balloon.addEventListener('click', handleBalloonClick);
+            balloon.addEventListener('touchend', handleBalloonTouchEnd);
+            
+            // Create explosion effect
+            function createExplosion(e) {
+                // Create fragments - adjust for device performance
+                const isMobile = window.innerWidth < 768;
+                const fragments = isMobile ? 80 : 150;
+                const colors = ['#ff6b6b', '#74b9ff', '#55efc4', '#ffeaa7', '#a29bfe', '#fd79a8'];
+                
+                // Get balloon position
+                const rect = balloon.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                
+                for (let i = 0; i < fragments; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particles';
+                    
+                    // Random position within balloon area
+                    const size = Math.random() * (isMobile ? 6 : 8) + 2;
+                    particle.style.width = `${size}px`;
+                    particle.style.height = `${size}px`;
+                    
+                    // Set color
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    particle.style.background = color;
+                    particle.style.boxShadow = `0 0 ${Math.random() * 10 + 5}px ${color}`;
+                    
+                    // Set initial position at balloon center
+                    particle.style.left = `${centerX}px`;
+                    particle.style.top = `${centerY}px`;
+                    
+                    document.body.appendChild(particle);
+                    
+                    // Animation with random direction and speed
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = Math.random() * 15 + 5;
+                    const vx = Math.cos(angle) * speed;
+                    const vy = Math.sin(angle) * speed;
+                    const lifetime = Math.random() * 1000 + 500;
+                    
+                    // Use requestAnimationFrame for smoother animation
+                    requestAnimationFrame(() => {
+                        particle.style.opacity = '1';
+                        
+                        let startTime = Date.now();
+                        let lastTimestamp = startTime;
+                        
+                        function animateParticle(timestamp) {
+                            const elapsed = timestamp - startTime;
+                            const progress = elapsed / lifetime;
+                            
+                            if (progress >= 1) {
+                                if (particle.parentNode) {
+                                    document.body.removeChild(particle);
+                                }
+                                return;
+                            }
+                            
+                            const x = centerX + vx * elapsed / 20;
+                            const y = centerY + vy * elapsed / 20 + 0.5 * 9.8 * Math.pow(elapsed / 100, 2);
+                            
+                            particle.style.left = `${x}px`;
+                            particle.style.top = `${y}px`;
+                            particle.style.opacity = 1 - progress;
+                            
+                            requestAnimationFrame(animateParticle);
+                        }
+                        
+                        requestAnimationFrame(animateParticle);
+                    });
+                }
+                
+                // Sound effect (browser might block this without user interaction)
+                try {
+                    const audio = new Audio('data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA/+M4wAAAAAAAAAAAAEluZm8AAAAPAAAAAwAAAbAAqqqq1dXV1ero6Ojo9PT09PT////////////////////+AAAAAExhdmM1OC4xMwAAAAAAAAAAAAAAACQDQAAAAAAAAAABsIQxJFEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/4zLAAAAAAAAAAAAATEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/4zDEADPIAUQVJGAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV');
+                    audio.play();
+                } catch (e) {
+                    console.log('Audio play failed:', e);
+                }
+            }
+            
+            // Reset button click
+            closeBtn.addEventListener('click', function() {
+                messageContainer.classList.remove('show-message');
+                setTimeout(function() {
+                    balloon.style.display = 'block';
+                    balloonBody.style.background = randomColor();
+                    
+                    // Re-add event listeners
+                    balloon.addEventListener('click', handleBalloonClick);
+                    balloon.addEventListener('touchend', handleBalloonTouchEnd);
+                }, 500);
+            });
+            
+            // Add different balloon colors on page reload
+            window.addEventListener('load', function() {
+                balloonBody.style.background = randomColor();
+                
+                // Handle initial orientation
+                checkOrientation();
+            });
+            
+            // Handle orientation changes
+            window.addEventListener('resize', checkOrientation);
+            
+            function checkOrientation() {
+                const isLandscape = window.innerWidth > window.innerHeight;
+                const isSmallHeight = window.innerHeight < 500;
+                
+                if (isLandscape && isSmallHeight) {
+                    document.body.classList.add('landscape-small');
+                } else {
+                    document.body.classList.remove('landscape-small');
+                }
+            }
+            
+            // Add subtle background animation
+            function createBackgroundParticles() {
+                // Reduce particle count on mobile
+                const isMobile = window.innerWidth < 768;
+                const particleCount = isMobile ? 20 : 50;
+                
+                for (let i = 0; i < particleCount; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'confetti';
+                    
+                    const size = Math.random() * (isMobile ? 6 : 8) + 2;
+                    particle.style.width = `${size}px`;
+                    particle.style.height = `${size}px`;
+                    
+                    const color = `hsl(${Math.random() * 360}, 70%, 70%)`;
+                    particle.style.setProperty('--color', color);
+                    particle.style.backgroundColor = color;
+                    
+                    particle.style.left = `${Math.random() * 100}vw`;
+                    particle.style.top = `${Math.random() * 100}vh`;
+                    
+                    document.body.appendChild(particle);
+                    
+                    // Slight random movement
+                    gsap(particle);
+                }
+            }
+            
+            function gsap(element) {
+                let x = Math.random() * 10 - 5;
+                let y = Math.random() * 10 - 5;
+                let duration = Math.random() * 10 + 10;
+                let opacity = Math.random() * 0.5 + 0.1;
+                
+                element.style.opacity = opacity;
+                
+                animateElement();
+                
+                function animateElement() {
+                    setTimeout(() => {
+                        element.style.transition = `transform ${duration}s ease-in-out, top ${duration}s ease-in-out, left ${duration}s ease-in-out`;
+                        element.style.transform = `translate(${x}px, ${y}px)`;
+                        
+                        setTimeout(() => {
+                            x = Math.random() * 10 - 5;
+                            y = Math.random() * 10 - 5;
+                            animateElement();
+                        }, duration * 1000);
+                    }, 100);
+                }
+            }
+            
+            // Initialize background particles
+            createBackgroundParticles();
+            
+            // Fix iOS Safari 100vh issue
+            function setVhProperty() {
+                let vh = window.innerHeight * 0.01;
+                document.documentElement.style.setProperty('--vh', `${vh}px`);
+            }
+            
+            setVhProperty();
+            window.addEventListener('resize', setVhProperty);
+            
+            // Prevent scrolling on mobile when interacting with the balloon
+            document.addEventListener('touchmove', function(e) {
+                if (e.target.closest('.balloon')) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            // Handle iOS touch issues
+            document.addEventListener('gesturestart', function(e) {
+                e.preventDefault();
+            });
+        });
+    </script>
+</body>
+</html>
