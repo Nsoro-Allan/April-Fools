@@ -1,0 +1,302 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+:root {
+  --balloon-width: clamp(100px, 20vw, 150px);
+  --balloon-height: clamp(120px, 25vw, 180px);
+}
+
+body {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  position: relative;
+  touch-action: manipulation;
+}
+
+.container {
+  text-align: center;
+  z-index: 10;
+  padding: 0 20px;
+  max-width: 100%;
+}
+
+h1 {
+  color: #2d3748;
+  margin-bottom: clamp(20px, 5vh, 40px);
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeIn 1s ease forwards;
+  text-align: center;
+  width: 100%;
+}
+
+.balloon {
+  width: var(--balloon-width);
+  height: var(--balloon-height);
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.3s ease-in-out;
+  animation: float 3s ease-in-out infinite;
+  transform-origin: bottom center;
+  filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.1));
+  -webkit-tap-highlight-color: transparent;
+}
+
+.balloon:hover {
+  transform: scale(1.05);
+}
+
+.balloon:active {
+  transform: scale(0.95);
+  transition: transform 0.1s ease-in-out;
+}
+
+.balloon-body {
+  background: #ff6b6b;
+  border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  box-shadow: inset -15px -10px 15px rgba(0, 0, 0, 0.1);
+}
+
+.balloon-highlight {
+  position: absolute;
+  width: 30%;
+  height: 25%;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  top: 15%;
+  left: 15%;
+  transform: rotate(25deg);
+}
+
+.balloon-string {
+  position: absolute;
+  width: 2px;
+  height: clamp(40px, 10vh, 80px);
+  background: #2d3748;
+  bottom: -80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: -1;
+}
+
+.explosion {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 100;
+  opacity: 0;
+}
+
+.confetti {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: var(--color);
+  opacity: 0;
+}
+
+.message-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.7);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  padding: 20px;
+}
+
+.message-box {
+  background: white;
+  padding: clamp(20px, 5vw, 40px);
+  border-radius: 20px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  text-align: center;
+  transform: scale(0.7);
+  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  width: min(90%, 450px);
+}
+
+.message-box h2 {
+  margin-bottom: clamp(15px, 4vw, 20px);
+  color: #ff6b6b;
+  font-size: clamp(1.8rem, 6vw, 2.5rem);
+}
+
+.message-box p {
+  margin-bottom: clamp(15px, 4vw, 30px);
+  color: #4a5568;
+  font-size: clamp(1rem, 3vw, 1.2rem);
+  line-height: 1.5;
+}
+
+.message-box button {
+  background: #ff6b6b;
+  color: white;
+  border: none;
+  padding: clamp(10px 20px, 3vw, 12px 30px);
+  border-radius: 30px;
+  font-size: clamp(0.9rem, 2.5vw, 1rem);
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+  font-weight: bold;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  min-width: 120px;
+  min-height: 44px; /* Minimum tap target size for mobile */
+}
+
+.message-box button:hover {
+  background: #fa5252;
+  transform: translateY(-2px);
+}
+
+.message-box button:active {
+  transform: translateY(0);
+}
+
+.show-message {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.show-message .message-box {
+  transform: scale(1);
+}
+
+.particles {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.instructions {
+  position: absolute;
+  bottom: clamp(10px, 5vh, 20px);
+  font-size: clamp(0.8rem, 2.5vw, 1rem);
+  color: #4a5568;
+  opacity: 0.7;
+  animation: pulse 2s infinite;
+  text-align: center;
+  padding: 0 10px;
+}
+
+/* Orientation handler */
+@media screen and (orientation: landscape) and (max-height: 500px) {
+  body {
+    flex-direction: row;
+    justify-content: space-around;
+  }
+
+  .container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 5vw;
+  }
+
+  h1 {
+    margin-bottom: 0;
+    text-align: right;
+    flex: 1;
+  }
+
+  .balloon {
+    flex: 0 0 auto;
+  }
+
+  .instructions {
+    bottom: 10px;
+    width: 100%;
+  }
+}
+
+/* For very small screens */
+@media screen and (max-width: 320px) {
+  h1 {
+    font-size: 1.3rem;
+  }
+
+  .message-box {
+    padding: 15px;
+  }
+
+  .message-box h2 {
+    font-size: 1.5rem;
+  }
+
+  .message-box p {
+    font-size: 0.9rem;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+/* Handle iOS Safari overscroll behavior */
+html {
+  position: fixed;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
+}
