@@ -296,7 +296,7 @@ html {
 }
 
 body {
-  overflow: auto;
+  overflow: none;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: none;
 }
